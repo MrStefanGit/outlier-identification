@@ -47,3 +47,62 @@ The app exposes an api having the following endponts:
 | ENDPOINT | PATH | DESCRIPTION | PARAMETERS |
 | :------: | :--: | :---------: | :--------: |
 |GET_OULIERS_FROM_STOCK_DATA|/get/outliers|Returns a json object for the stocks selected trough the input parameters|stock_exhange, stock_id, file_no|
+
+## Running the application
+
+### Docker
+
+Just run `docker-compose up -d --build` and it should create a container running the application. By default the application will run on port 8080, but you can change that in the docker-compose.yaml file
+
+## Using the application
+
+In order to use the application you need to send requests to the application:
+
+```bash
+curl 'http://localhost:8080/get/outliers'
+```
+
+You can use the input parameters in order to select the data you want to be processed and he output is received as a json in the response of the request, or in the outlier_files_output folder as csv files
+
+### Inputs
+
+#### Stock exhange
+
+Will process all the files from the specified stock exchange.
+
+POSSIBLE VALUES:
+- LSE
+- NASDAQ
+- NYSE
+
+```bash
+curl 'http://localhost:8080/get/outliers?stock_exchange=LSE'
+```
+
+#### Stock ID
+
+Will process only the file of the specified stock ID
+
+POSSIBLE VALUES:
+- LSE
+    - FLTR
+    - GSK
+- NASDAQ
+    - TSLA
+- NYSE
+    - ASH
+    - NMR
+
+```bash
+curl 'http://localhost:8080/get/outliers?stock_id=TSLA'
+curl 'http://localhost:8080/get/outliers?stock_exchange=LSE&stock_id=FLTR'
+```
+
+#### File number
+
+Will process only a certain number of stocks from the specified stock exchange
+```bash
+curl 'http://localhost:8080/get/outliers?file_no=1'
+curl 'http://localhost:8080/get/outliers?stock_exchange=LSE&file_no=1'
+```
+
