@@ -39,3 +39,10 @@ outlier_files_output: # Output folder for storing outliers in csv files
         STOCK_EXCHANGE:
             STOCK_ID.csv
 ```
+
+## API endpoints
+
+The app exposes an api having the following endponts:
+
+| ENDPOINT | PATH | DESCRIPTION | PARAMETERS |
+| GET_OULIERS_FROM_STOCK_DATA | /get/outliers | Returns a json object for the stocks selected trough the input parameters | stock_exhange, stock_id, file_no |
