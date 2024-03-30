@@ -7,3 +7,5 @@ services:
     container_name: "app"
     ports:
       - "8080:5000"
+    volumes:
+      - ./outlier_files_output:/app/oultier_files
