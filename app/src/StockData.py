@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import os
 
 class StockData:
@@ -12,6 +13,8 @@ class StockData:
             
         self.paths = []
         self.dataframes = []
+        self.samples = []
+        self.outliers = []
 
         self.errors = []
 
@@ -106,21 +109,22 @@ class StockData:
                 df = pd.read_csv(file_path, header=None, names=['stock', 'date', 'value'])  # You can adjust this according to your file format
                 self.dataframes.append(df)
             except FileNotFoundError:
-                self.errors.append(f"File '{file_path}' not found.")
+                self.errors.append(f"Stock data not found!")
                 return False
             except pd.errors.EmptyDataError:
-                self.errors.append(f"File '{file_path}' is empty.")
+                self.errors.append(f"Stock data is empty!")
                 return False
             except pd.errors.ParserError:
-                self.errors.append(f"Error parsing file '{file_path}'.")
+                self.errors.append(f"Stock data not in csv format!")
                 return False
             except Exception as e:
-                self.errors.append(f"An error occurred while loading file '{file_path}': {e}")
+                self.errors.append(f"Internal server error!")
                 return False
 
         return True
     
     def load_data(self):
+        """Function that is called in order to process input parameters, find file paths and load the files into pandas dataframes"""
         try:
             self.paths = self.get_paths("./stock_price_data_files", self.stock_exchange, self.stock_ID, self.file_no)
         except (FileNotFoundError, ValueError, TypeError) as e:
@@ -131,3 +135,42 @@ class StockData:
             return True
         else:
             return False
+        
+    def generate_samples(self):
+        """ Function that generates random samples (30 datapoints)"""
+        for df in self.dataframes:
+            random_timestamp_index = np.random.randint(0, len(df) - 29)  # Ensure at least 30 rows left after the selected index
+            # Get the next 30 data points
+            selected_data = df.iloc[random_timestamp_index:random_timestamp_index + 30]  # Assuming 'Value' is the column name for the data points
+            self.samples.append(selected_data)
+
+    def find_outliers(self):
+        """Function that finds the outliers in all the samples and saves them into the outliers list"""
+        for df in self.samples:
+            
+            # Calculate Mean
+            mean = round(np.mean(df['value']), 6)
+
+            #Calculate standard deviation
+            std_dev = round(np.std(df['value']), 6)
+
+            # Calculate upper and lower limits
+            upper_limit = round(mean + 2 * std_dev, 6)
+            lower_limit = round(mean - 2 * std_dev, 6)
+
+            # Identify outliers
+            outliers = df[(df['value'] > upper_limit) | (df['value'] < lower_limit)]
+
+            outliers_df = pd.DataFrame({
+                'Stock_ID': outliers['stock'],
+                'Timestamp': outliers['date'],
+                'Value': outliers['value'],
+                'Mean': mean,
+                'Standard_Deviation': std_dev,
+                'Upper_Limit': upper_limit,
+                'Lower_Limit': lower_limit,
+                'Value_Mean_Difference': round(outliers['value'] - mean, 6),
+                'Percent_Deviation': abs(((outliers[outliers['value'] > upper_limit]['value'] - upper_limit) / upper_limit * 100)._append((outliers[outliers['value'] < lower_limit]['value'] - lower_limit) / lower_limit * 100))
+            })
+            self.outliers.append(outliers_df)
+

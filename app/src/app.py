@@ -15,5 +15,9 @@ sd = StockData(stock_exchange=stock_exchange, stock_ID=stock_id, file_no=file_no
 print(sd.paths)
 if sd.load_data():
     print(f"LENGTH: {len(sd.paths)}, PATHS: {sd.paths}")
+    sd.generate_samples()
+    print(sd.samples)
+    sd.find_outliers()
+    print(sd.outliers)
 else:
     print(sd.errors)
