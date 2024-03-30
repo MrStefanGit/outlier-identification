@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 import os
+import json
+from datetime import datetime
 
 class StockData:
     
@@ -37,9 +39,13 @@ class StockData:
 
         if not os.path.exists(base_folder):
             raise FileNotFoundError("Internal server error") # Base folder problems
+        
 
         if file_no is not None and (not isinstance(file_no, int) or file_no <= 0):
-            raise ValueError("Invalid file number! Please check your input.")
+            try:
+                file_no_int = int(file_no)
+            except ValueError:
+                raise ValueError("Invalid file number! Please enter a valid integer.")
         
         if dir is None and file is None and file_no is None:
             # Case: No parameters provided
@@ -173,4 +179,62 @@ class StockData:
                 'Percent_Deviation': abs(((outliers[outliers['value'] > upper_limit]['value'] - upper_limit) / upper_limit * 100)._append((outliers[outliers['value'] < lower_limit]['value'] - lower_limit) / lower_limit * 100))
             })
             self.outliers.append(outliers_df)
+
+    def save_outliers_to_files(self):
+        # Generate timestamp for directory name
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+
+        # Create directory name
+        directory_name = f"./oultier_files/request_{timestamp}"
+
+        for index, path in enumerate(self.paths):
+            if len(self.outliers[index]) > 0:
+                parts = path.split('/')
+                stock_exchange = parts[-2]
+                stock_id = os.path.splitext(parts[-1])[0]
+                # print(f"{stock_exchange}, {stock_id}")
+
+                try:
+                    # Attempt to create the directory if it doesn't exist
+                    if not os.path.exists(directory_name):
+                        os.makedirs(directory_name)
+                    else:
+                        print(f"Directory '{directory_name}' already exists. Skipping creation.")
+                except Exception as e:
+                    print(f"An error occurred while creating directory '{directory_name}': {e}")
+
+                exchange_dir = os.path.join(directory_name, stock_exchange)
+
+                try:
+                    # Attempt to create the exchange directory if it doesn't exist
+                    if not os.path.exists(exchange_dir):
+                        os.makedirs(exchange_dir)
+                    else:
+                        print(f"Directory '{exchange_dir}' already exists. Skipping creation.")
+                except Exception as e:
+                    print(f"An error occurred while creating directory '{exchange_dir}': {e}")
+
+                try:
+                    # Save dataframe as CSV inside exchange directory
+                    self.outliers[index].to_csv(os.path.join(exchange_dir, f"{stock_id}.csv"), index=False)
+                    print("Dataframe saved successfully.")
+                except Exception as e:
+                    print(f"An error occurred while reading CSV file or saving dataframe: {e}")
+
+                print("Process completed.")
+
+    def get_outliers_dict(self):
+        json_output = {}
+        for index, path in enumerate(self.paths):
+            if len(self.outliers[index]) > 0:
+                parts = path.split('/')
+                stock_exchange = parts[-2]
+                stock_id = os.path.splitext(parts[-1])[0]
+
+                if stock_exchange not in json_output:
+                    json_output[stock_exchange] = {}
+
+                json_output[stock_exchange][stock_id] = json.loads(self.outliers[index].to_json(orient='records'))
+
+        return json_output
 
