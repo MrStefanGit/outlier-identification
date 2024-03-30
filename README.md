@@ -54,6 +54,11 @@ The app exposes an api having the following endponts:
 
 Just run `docker-compose up -d --build` and it should create a container running the application. By default the application will run on port 8080, but you can change that in the docker-compose.yaml file
 
+### Python
+- Install requirements.txt using pip: "pip install -r requirements.txt"
+- make sure you are in the src directory
+- run app.py
+
 ## Using the application
 
 In order to use the application you need to send requests to the application:
