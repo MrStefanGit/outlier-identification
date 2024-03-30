@@ -19,7 +19,7 @@ def get_outliers():
     if sd.load_data():
         sd.generate_samples()
         sd.find_outliers()
-        # sd.save_outliers_to_files()
+        sd.save_outliers_to_files()
         return jsonify({"status": "success", "outliers": sd.get_outliers_dict()})
     else:
         return jsonify({"status": "failed", "errors": sd.errors})
