@@ -40,12 +40,13 @@ class StockData:
         if not os.path.exists(base_folder):
             raise FileNotFoundError("Internal server error") # Base folder problems
         
+        try:
+            file_no = int(file_no)
+        except ValueError:
+            raise ValueError("Invalid file number! Please enter a valid integer.")
 
         if file_no is not None and (not isinstance(file_no, int) or file_no <= 0):
-            try:
-                file_no_int = int(file_no)
-            except ValueError:
-                raise ValueError("Invalid file number! Please enter a valid integer.")
+            raise ValueError("Invalid file number! Please check your input.")
         
         if dir is None and file is None and file_no is None:
             # Case: No parameters provided
